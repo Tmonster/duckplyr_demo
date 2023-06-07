@@ -8,38 +8,113 @@ duckplyr_from_parquet <- function(path, options=list()) {
    duckplyr:::as_duckplyr_df(duckdb:::rel_to_altrep(out))
 }
 
-taxi_data_2019 <- duckplyr_from_parquet('/Users/tomebergen/2019-taxi.parquet')
-
+taxi_data_2019 <- duckplyr_from_parquet('/Users/tomebergen/taxi-data-2019/*/*.parquet', list(hive_partitioning=TRUE))
+zone_map <- duckplyr_from_parquet("/Users/tomebergen/duckplyr_demo/zone_lookups.parquet")
 
 print_result <- function(res) {
   print(invisible(res))
 }
 
-result_1 <- taxi_data_2019 |> filter(total_amount > 50) |>
+tips_by_day_hour <- taxi_data_2019 |> filter(total_amount > 2) |> 
   mutate(tip_pct = 100 * tip_amount / total_amount, dn = dayofweek(pickup_datetime), hr=hour(pickup_datetime)) |>
   filter(month==12) |>
   summarise(
-    avg_tip_pct = mean(tip_pct),
+    avg_tip_pct = median(tip_pct),
     n = n(),
     .by = c(dn, hr)
   ) |>
-  arrange(dn, hr) 
+  arrange(desc(avg_tip_pct))
 
-duckdb:::rel_explain(duckdb:::rel_from_altrep_df(result_1))
+time <- system.time(collect(tips_by_day_hour))
 
-message("FIRST QUERY month = 12")
-system.time(res_materialized <- collect(result_1))
+print("time to get result")
+print(time)
 
+# duckdb:::rel_explain(duckdb:::rel_from_altrep_df(result_1))
 
-result_2 <- taxi_data_2019 |> filter(total_amount > 50) |>
-  mutate(tip_pct = 100 * tip_amount / total_amount, dn = dayofweek(pickup_datetime), hr=hour(pickup_datetime)) |>
-  filter(month==11) |>
+# What is the median tip amount grouped by the number of passenger
+tips_by_passenger <- taxi_data_2019 |> filter(total_amount > 2) |> 
+  mutate(tip_pct = 100 * tip_amount / total_amount) |>
+  filter(month==12) |>
   summarise(
-    avg_tip_pct = mean(tip_pct),
+    avg_tip_pct = median(tip_pct),
     n = n(),
-    .by = c(dn, hr)
+    .by = passenger_count
   ) |>
-  arrange(dn, hr) 
+  arrange(desc(passenger_count))
 
-print("SECOND QUERY month = 11")
-system.time(res_materialized <- collect(result_2))
+time <- system.time(collect(tips_by_passenger))
+
+print("time to get result")
+print(time)
+
+# What is the median tip amount grouped by trip distance (per mile)
+tips_by_distance <- taxi_data_2019 |>
+  filter(total_amount > 2, month==12) |> 
+  mutate(tip_pct = 100 * tip_amount / total_amount, trip_dist_floor = floor(trip_distance)) |>
+  summarise(
+    avg_tip_pct = median(tip_pct),
+    n = n(),
+    .by = trip_dist_floor
+  ) |>
+  arrange(desc(avg_tip_pct))
+
+time <- system.time(collect(tips_by_passenger))
+
+print("time to get result")
+print(time)
+
+# What pickup neighborhoods tip the most?
+tips_by_pickup_neighborhood <- taxi_data_2019 |>
+  filter(total_amount > 2, month==12) |> 
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  mutate(tip_pct = 100 * tip_amount / total_amount) |>
+  select(Zone, tip_pct) |>
+  summarise(
+    avg_tip_pct = median(tip_pct),
+    .by = Zone
+  ) |>
+  arrange(desc(avg_tip_pct)) |> head() |>
+  print()
+
+print("time to get result")
+print(time)
+
+
+# What percent of taxi rides arent reporting tips / don't tip
+# grouped by (pickup, dropoff) Borough
+# This requires a window function! Fun
+# What pickup neighborhoods tip the most?
+# tips_by_pickup_neighborhood <- taxi_data_2019 |>
+#   filter(month==12) |> 
+#   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+#   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+#   mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y, tip_amount) |>
+#   summarise(
+#     num_trips = n(),
+#     num_trips_no_tip = 
+#     .by = c(pickup_borough, dropoff_borough)
+#   ) |>
+#   arrange(desc(avg_tip_pct)) |> head() |>
+#   print()
+
+# print("time to get result")
+# print(time)
+
+# What airport dropoff gives you the most tips
+tips_by_airport <- taxi_data_2019 |>
+  filter(total_amount > 2, month==12) |> 
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  filter(pickup_location_id == 1 | pickup_location_id == 132 | pickup_location_id == 138) |>
+  mutate(tip_pct = 100 * tip_amount / total_amount) |>
+  select(Zone, tip_pct) |>
+  summarise(
+    avg_tip_pct = median(tip_pct),
+    .by=Zone
+  ) |>
+  arrange(desc(avg_tip_pct)) |>
+  print()
+
+print("time to get result")
+print(time)
+
