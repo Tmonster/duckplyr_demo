@@ -25,17 +25,18 @@ order by median_tip_pct desc;
 
 -- (pickup,dropoff) locations where no tips are common
 select 
-	pickup_borough.borough pickup,
-	dropoff_borough.borough dropoff,
-	median(tip_amount*100/total_amount) as median_tip_pct,
+	pickup_zone.Borough pickup,
+	dropoff_zone.Borough dropoff,
+	(select count(*) from taxi_data where tip_amount == 0) as no_tip_trips,
+	count(*) as all_trips,
 from taxi_data,
-	 zones_2_borough pickup_borough,
-	 zones_2_borough dropoff_borough
-where pickup_borough.LocationID = pickup_location_id and
-      dropoff_borough.LocationID = dropoff_location_id and
+	 zone_lookups pickup_zone,
+	 zone_lookups dropoff_zone
+where pickup_zone.LocationID = pickup_location_id and
+      dropoff_zone.LocationID = dropoff_location_id and
       tip_amount >= 0 and tip_amount IS NOT NULL
 group by pickup, dropoff
-order by median_tip_pct desc;
+order by all_trips desc;
 
 
 -- pickup / dropoff borough with the highest median tipping percentage
