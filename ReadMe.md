@@ -31,13 +31,13 @@ With all this data, we can ask a lot of questions about how people have been tip
 7. How does tipping in winter months compare to tipping in summer months?
 8. What borough to borough trips are the most popular?
 9. What are the most popular manhattan to manhattan cab rides?
-10. Does anybody take a taxi to ellis island?
+10. Does anybody take a taxi to one of the manhattan islands that technically cannot be reached via private vehicles?
 
 ### What has improved 
 1. For certain aggregates, you need to call `collect()` to bring data into memory, duckplyr doesn't need this
 2. When joining two tables, if the columns types are `int32` and `int64`, duckplyr automatically handles upcasting.
 3. Filter pushdown for hive partitioned files.
-4. Windowing 
+4. Windowing (Q5)
 5. Projection push down
 
 

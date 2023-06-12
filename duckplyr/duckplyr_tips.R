@@ -92,9 +92,7 @@ print(time)
 
 
 # -------- Q5 ---------
-# What pickup neighborhoods tip the most?
-
-# What percent of taxi rides arent reporting tips / don't tip
+# What percent of taxi rides per borough arent reporting tips / don't tip
 # grouped by (pickup, dropoff) Borough
 # This requires a window function! Fun
 # What pickup neighborhoods tip the most?
@@ -116,7 +114,6 @@ print(time)
 
 # -------- Q6 ---------
 # What airport dropoff gives you the most tips
-
 tips_by_airport <- taxi_data_2019 |>
   filter(total_amount > 2, month==12) |> 
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
@@ -156,7 +153,6 @@ tips_by_pickup_neighborhood <- taxi_data_2019 |>
   filter(total_amount > 2) |> 
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
-  mutate(tip_pct = 100 * tip_amount / total_amount) |>
   select(start_borough = Borough.x, end_borough=Borough.y, tip_pct) |>
   summarise(
     num_trips = n(),
@@ -170,8 +166,7 @@ print(time)
 
 # -------- Q9 ---------
 # What are the most popular manhattan to manhattan cab rides?
-# What borough to borough trips are the most popular?
-tips_by_pickup_neighborhood <- taxi_data_2019 |>
+manhattan_popular_rides <- taxi_data_2019 |>
   filter(total_amount > 2) |> 
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
@@ -184,8 +179,6 @@ tips_by_pickup_neighborhood <- taxi_data_2019 |>
   arrange(desc(num_trips)) |> head(20) |>
   print()
 
-print("time to get result")
-print(time)
 
 # -------- Q10 ---------
 # Does anybody go to Ellis island? Not possible technically
@@ -216,8 +209,4 @@ num_trips_starting_at_an_island <- taxi_data_2019 |>
   print()
 
 # Interesting 1 pickup at Ellis island. 117 at Governor's island.
-
-
-
-# Zone ending seems to
 
