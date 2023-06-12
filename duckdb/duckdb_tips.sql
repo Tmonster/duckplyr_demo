@@ -14,7 +14,7 @@ order by avg_tip_pct desc;
 
 
 -- pickup locations with the highest median tipping percentage.
-select 
+explain select 
 	zone.Zone pickup_neighborhood,
 	median(tip_amount*100/total_amount) as median_tip_pct 
 from taxi_data, zone_lookups zone

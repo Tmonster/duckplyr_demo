@@ -9,6 +9,7 @@
 
 This will grab about 65 GB of data 
 ```sql
+$ duckdb
 create table nyc_taxi as select * from read_parquet('s3://voltrondata-labs-datasets/nyc-taxi/*', hive_partitioning=TRUE)
 COPY nyc_taxi to 'nyc-taxi' (FORMAT PARQUET, PARTITION_BY (year, month));
 create table zone_map as (SELECT * FROM 'zone_lookups.csv');

@@ -101,9 +101,9 @@ LocationID,Borough,Zone,service_zone
 100,Manhattan,Garment District,Yellow Zone
 101,Queens,Glen Oaks,Boro Zone
 102,Queens,Glendale,Boro Zone
-103,Manhattan,Governor's Island/Ellis Island/Liberty Island,Yellow Zone
-104,Manhattan,Governor's Island/Ellis Island/Liberty Island,Yellow Zone
-105,Manhattan,Governor's Island/Ellis Island/Liberty Island,Yellow Zone
+103,Manhattan,Liberty Island,Yellow Zone
+104,Manhattan,Ellis Island,Yellow Zone
+105,Manhattan,Governor's Island,Yellow Zone
 106,Brooklyn,Gowanus,Boro Zone
 107,Manhattan,Gramercy,Yellow Zone
 108,Brooklyn,Gravesend,Boro Zone
