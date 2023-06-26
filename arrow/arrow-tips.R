@@ -2,7 +2,7 @@ library(tidyverse)
 library(arrow)
 
 ds <- open_dataset("/Users/tomebergen/taxi-data-2019/", partitioning = c("month"))
-zone_map <- read_parquet("/Users/tomebergen/duckplyr_demo/zone_lookups.parquet")
+zone_map <- read_parquet("/Users/tomebergen/duckplyr_demo/good_zone_map.parquet")
 # zone_map <- read_csv_arrow("/Users/tomebergen/duckplyr_demo/zone_lookups.csv", skip = 1,
 #   schema=schema(LocationID=int64(), Borough=string(),Zone=string(),service_zone=string()))
 # zone_map[, LocationID] <- lapply(zone_map[, LocationID], as.integer)
@@ -11,6 +11,11 @@ zone_map <- read_parquet("/Users/tomebergen/duckplyr_demo/zone_lookups.parquet")
 tips_by_day_hour <- ds |> filter(total_amount > 2) |> 
   mutate(tip_pct = 100 * tip_amount / total_amount, dn = wday(pickup_datetime), hr=hour(pickup_datetime)) |>
   filter(month==12) |>
+  # must pull in the data
+  # otherwise you have the error
+  # Error: Error in summarize_eval(names(exprs)[i], exprs[[i]], ctx, length(.data$group_by_vars) >  :
+  # Expression c(dn, hr) is not an aggregate expression or is not supported in Arrow
+  collect() |> 
   summarise(
     avg_tip_pct = median(tip_pct),
     n = n(),
@@ -27,6 +32,7 @@ print(time)
 tips_by_passenger <- ds |> filter(total_amount > 2) |> 
   mutate(tip_pct = 100 * tip_amount / total_amount) |>
   filter(month==12) |>
+  collect() |>
   summarise(
     avg_tip_pct = median(tip_pct),
     n = n(),
@@ -57,11 +63,18 @@ time <- system.time(collect(tips_by_passenger))
 print("time to get result")
 print(time)
 
+
+
+tips_by_pickup_neighborhood <- zone_map |>
+  mutate(pickup_location_id = cast(pickup_location_id, int64())) |>
+  inner_join(ds, by(pickup_location_id == pickup_location_id)) |> head(5) |> collect()
+
+
+# DPLYR should automatically handle casting.
 # What pickup neighborhoods tip the most?
 tips_by_pickup_neighborhood <- ds |>
   filter(total_amount > 2, month==12) |> 
-  full_join(zone_map) |>
-  filter(as.integer(pickup_location_id) == as.integer(LocationID)) |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
   mutate(tip_pct = 100 * tip_amount / total_amount) |>
   # CHECK: this collect makes arrow slow?
   collect() |>

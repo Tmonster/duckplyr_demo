@@ -96,18 +96,31 @@ print(time)
 # grouped by (pickup, dropoff) Borough
 # This requires a window function! Fun
 # What pickup neighborhoods tip the most?
-# tips_by_pickup_neighborhood <- taxi_data_2019 |>
-#   filter(month==12) |> 
-#   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
-#   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
-#   mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y, tip_amount) |>
-#   summarise(
-#     num_trips = n(),
-#     num_trips_no_tip = 
-#     .by = c(pickup_borough, dropoff_borough)
-#   ) |>
-#   arrange(desc(avg_tip_pct)) |> head() |>
-#   print()
+num_trips_per_borough <- taxi_data_2019 |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+  mutate(pickup_borough = Borough.x, dropoff_borough=Borough.y) |>
+  select(pickup_borough, dropoff_borough, tip_amount) |>
+  summarise(
+    num_trips = n(),
+    .by = c(pickup_borough, dropoff_borough)
+  )
+
+num_trips_per_borough_no_tip <- taxi_data_2019 |>
+  filter(tip_amount == 0, total_amount > 0) |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+  mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y, tip_amount) |>
+  summarise(
+    num_zero_tip_trips = n(),
+    .by = c(pickup_borough, dropoff_borough)
+  )
+
+num_zero_percent_trips <- num_trips_per_borough |>
+  inner_join(num_trips_per_borough_no_tip) |>
+  mutate(num_trips = num_trips, percent_zero_tips_trips = 100*num_zero_tip_trips/num_trips) |> 
+  select(pickup_borough, dropoff_borough, num_trips, percent_zero_tips_trips) |>
+  arrange(desc(percent_zero_tips_trips)) |> print()
 
 # print("time to get result")
 # print(time)

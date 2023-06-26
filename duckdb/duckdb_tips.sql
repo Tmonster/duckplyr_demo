@@ -1,5 +1,5 @@
 create view taxi_data as (select * from  read_parquet('/Users/tomebergen/taxi-data-2019/*/*.parquet', hive_partitioning=TRUE));
-create table zone_lookups as select * from 'https://d37ci6vzurychx.cloudfront.net/misc/taxi+_zone_lookup.csv';
+create table zone_lookups as select * from read_parquet('../duckplyr_demo/zone_lookups.parquet');
 
 
 select 
@@ -21,7 +21,7 @@ from taxi_data, zone_lookups zone
 where zone.LocationID = pickup_location_id and month=12
 group by pickup_neighborhood
 order by median_tip_pct desc;
-
+`
 
 -- (pickup,dropoff) locations where no tips are common
 select 
@@ -93,6 +93,110 @@ where pickup_borough.LocationID = pickup_location_id and
       dropoff_borough.LocationID = dropoff_location_id
 group by pickup, dropoff
 order by num_trips desc;
+
+
+Q5.sql
+
+
+
+select pickup_borough.borough as pickup,
+	 dropoff_borough.borough as dropoff,
+	 count(*) as num_trips,
+	 100*count(case tip_amount when 0 then 1 else null end)/num_trips percent_0_trips
+	 from taxi_data,
+	 zone_lookups pickup_borough,
+	 zone_lookups dropoff_borough
+	 where pickup_borough.LocationID = pickup_location_id and
+      	 dropoff_borough.LocationID = dropoff_location_id
+	 group by pickup, dropoff
+	 order by percent_0_trips;
+
+
+select 
+t1.pickup_borough as pickup,
+t1.dropoff_borough as dropoff,
+n.num_zero_trips / n.num_trips,
+from taxi_data t1,
+	(select count(*), pickup_borough as pickup,  as n from taxi_data where tip_amount = 0 group by pickup, dropoff) num_zero_trips,
+	(select count(*) as n from taxi_data group by pickup, dropoff) num_trips
+where n.
+group by pickup, dropoff
+
+select t1.pickup, t1.dropoff, t2.trips as num_trips, 100*t1.num_zero_trips/t2.trips as percent_zero_tip_trips
+from (select 
+	 	pickup_borough.borough as pickup,
+		dropoff_borough.borough as dropoff,
+		count(*) as num_zero_trips
+		from taxi_data,
+		zone_lookups pickup_borough,
+	 	zone_lookups dropoff_borough
+	 	where tip_amount == 0 and 
+	 	pickup_borough.LocationID = pickup_location_id and
+      	dropoff_borough.LocationID = dropoff_location_id 
+      	group by pickup, dropoff) t1,
+      (select 
+	 	pickup_borough.borough as pickup,
+		dropoff_borough.borough as dropoff,
+		count(*) as trips
+		from taxi_data,
+		zone_lookups pickup_borough,
+	 	zone_lookups dropoff_borough
+	 	where pickup_borough.LocationID = pickup_location_id and
+      	dropoff_borough.LocationID = dropoff_location_id group by pickup, dropoff) t2
+where t1.pickup = t2.pickup and t1.dropoff = t2.dropoff order by percent_zero_tip_trips desc;
+
+
+
+
+
+
+select 
+pickup_borough.borough as pickup,
+dropoff_borough.borough as dropoff,
+100*t2.num_zero_trips/count(*) as percent_zero_tips
+from taxi_data,
+	 zone_lookups pickup_borough,
+	 zone_lookups dropoff_borough,
+	 (select 
+	 	pickup_borough.borough as pickup,
+		dropoff_borough.borough as dropoff,
+		count(*) as num_zero_trips
+		from taxi_data,
+		zone_lookups pickup_borough,
+	 	zone_lookups dropoff_borough
+	 	where tip_amount == 0
+	 	and pickup_borough.LocationID = pickup_location_id and
+      dropoff_borough.LocationID = dropoff_location_id group by pickup, dropoff) t2
+where pickup_borough.LocationID = pickup_location_id and
+      dropoff_borough.LocationID = dropoff_location_id and 
+      t2.pickup = pickup_borough.borough and t2.dropoff = dropoff_borough.borough
+group by pickup, dropoff;
+
+
+select 
+pickup_borough.borough as pickup,
+dropoff_borough.borough as dropoff,
+count(*) OVER (partition by pickup, dropoff) as num_trips,
+-- count(*) OVER (partition by pickup, dropoff) having (tip_amount == 0) as num_zero_tip_trips.
+100*num_zero_tip_trips/num_trips as q
+from taxi_data
+	 zone_lookups pickup_borough,
+	 zone_lookups dropoff_borough
+where pickup_borough.LocationID = pickup_location_id and
+      dropoff_borough.LocationID = dropoff_location_id
+group by pickup, dropoff
+
+
+Q5 as window
+select 
+t1.pickup_borough as pickup,
+t1.dropoff_borough as dropoff,
+count(*) OVER (partition by pickup, dropoff) having (tip_amount == 0) as num_zero_tip_trips.
+count(*) OVER (partition by pickup, dropoff) as num_trips,
+100*num_zero_tip_trips/num_trips as q
+from taxi_data
+where n
+group by pickup, dropoff
 
 
 -- This actually shows some cool tipping patterns

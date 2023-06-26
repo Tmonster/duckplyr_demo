@@ -1,0 +1,40 @@
+options(conflicts.policy = list(warn = FALSE))
+library(tidyverse)
+
+
+taxi_data_2019 <- arrow::read_parquet("/Users/tomebergen/duckdb/big-taxis.parquet")
+zone_map <- arrow::read_parquet("/Users/tomebergen/duckplyr_demo/zone_lookups.parquet")
+
+# -------- Q5 ---------
+# What percent of taxi rides per borough arent reporting tips / don't tip
+# grouped by (pickup, dropoff) Borough
+# This requires a window function! Fun
+# What pickup neighborhoods tip the most?
+num_trips_per_borough <- taxi_data_2019 |>
+  filter(total_amount > 40) |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+  mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y) |>
+  select(pickup_borough, dropoff_borough, tip_amount) |>
+  summarise(
+    num_trips_with_0_tip = n(),
+    num_trips = n(),
+    .by = c(pickup_borough, dropoff_borough)
+  )
+
+num_trips_per_borough_no_tip <- taxi_data_2019 |>
+  filter(total_amount > 40) |>
+  filter(tip_amount == 0) |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+  mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y, tip_amount) |>
+  summarise(
+    num_zero_tip_trips = n(),
+    .by = c(pickup_borough, dropoff_borough)
+  )
+
+num_zero_percent_trips <- num_trips_per_borough |>
+  inner_join(num_trips_per_borough_no_tip) |>
+  mutate(num_trips = num_trips, percent_zero_tips_trips = 100*num_zero_tip_trips/num_trips) |> 
+  select(pickup_borough, dropoff_borough, num_trips, percent_zero_tips_trips) |>
+  arrange(desc(percent_zero_tips_trips)) |> print()
