@@ -10,7 +10,7 @@ duckplyr_from_parquet <- function(path, options=list()) {
 
 
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckplyr_from_parquet('../duckplyr_demo/taxi-data-2019.parquet')
+  taxi_data_2019 <- duckplyr_from_parquet('taxi-data-2019-partitioned/*/*.parquet', list(hive_partitioning=TRUE))
   zone_map <- duckplyr_from_parquet("../duckplyr_demo/zone_lookups.parquet")
 }
 
@@ -28,5 +28,7 @@ tips_by_day_hour <- taxi_data_2019 |>
   arrange(desc(avg_tip_pct))
 
 time <- system.time(collect(tips_by_day_hour))
+
+tips_by_day_hour |> head(5)
 
 # duckdb:::rel_explain(duckdb:::rel_from_altrep_df(tips_by_day_hour))
