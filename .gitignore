@@ -5,3 +5,5 @@ taxi-data-2019.parquet
 **/.DS_Store
 arrow/**
 duckdb/**
+arrow_ignore/*
+duckdb_ignore/*
