@@ -18,5 +18,7 @@ tips_by_pickup_neighborhood <- taxi_data_2019 |>
   arrange(desc(avg_tip_pct)) |> head() |>
   print()
 
+time <- system.time(collect(tips_by_pickup_neighborhood))
+
 print("time to get result")
 print(time)
