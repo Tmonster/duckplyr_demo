@@ -1,59 +1,51 @@
 # Organization
-1. Getting nyc-taxi data
-2. Installation of libraries
-3. What solutions can run the queries?
-4. Running the queries/scripts
-5. What has improved 
+1. Getting Started
 
-### Getting nyc-taxi  data
+### Getting Started
 
-This will grab about 65 GB of data 
-```sql
-$ duckdb
-create table nyc_taxi as select * from read_parquet('s3://voltrondata-labs-datasets/nyc-taxi/*', hive_partitioning=TRUE)
-COPY nyc_taxi to 'nyc-taxi' (FORMAT PARQUET, PARTITION_BY (year, month));
-create table zone_map as (SELECT * FROM 'zone_lookups.csv');
+First setup and install the libraries and unzip the parquet data
 ```
-
-### Installation of libraries
--- TODO.
+./setup.sh
+```
 
 ### Running the queries/scripts
 
-With all this data, we can ask a lot of questions about how people have been tipping new york taxis. We can ask the following questions.
+To run all duckplyr queries at once run 
+```
+Rscript duckplyr/run_all_queries.R
+```
+To run all dplyr queries at once run 
+```
+Rscript dplyr/run_all_queries.R
+```
 
-1. What is the median tip amount grouped by (day of the week, hour)
-	- Lots of group bys
-	- 7 * 24 = 168 groups
-2. What is the median tip amount grouped by number of passengers
-	- No everything can be done directly on the parquet files
-	- no need to call any intermediate collect().
+To run just one duckplyr query run
+```
+Rscript duckplyr/q0*_**.R
+```
 
-3. What is the median tip amount grouped by trip distance (per mile)
-4. What pickup neighborhoods tip the most?
-	- again, lots of grouping and averaging
+To run just one dplyr query run
+```
+Rscript dplyr/q0*_**.R
+```
 
-5. What percentage of people aren't tipping grouped by (pickup, dropoff) borough
-	- shows that duckplyr does not eagerly evaluate. 
-	- first get the number of trips per boroughs
-	- then get number of trips with no tip per borough
-	- join them and calculate the result. 
-	- (In pure duckdb this is easier with a case statement in the count() function)
-
-6. What airport dropoff gives you the most tips?
-7. How does tipping in winter months compare to tipping in summer months?
-
-8. What borough to borough trips are the most popular?
-9. What are the most popular manhattan to manhattan cab rides?
-
-
-10. Does anybody take a taxi to one of the manhattan islands that technically cannot be reached via private vehicles?
-
-### What has improved 
-1. For certain aggregates, you need to call `collect()` to bring data into memory, duckplyr doesn't need this
-2. When joining two tables, if the columns types are `int32` and `int64`, duckplyr automatically handles upcasting (apparently dplyr as well, but arrow doesn't).
-3. Filter pushdown for hive partitioned files (going to land soon).
-<!-- 4. Windowing (Q5) -->
-4. Projection push down (still needs to be fixed)
+### What do the queries show/highlight?
+1. Highlights Duckplyr handling of many small groups
+    - Get median tips by day & hour. 
+    - 168 small groups.
+    - Utilizes Perfect hash groups
+2. Highlights Duckplyr projection pushdown
+    - Gets median tip by the number of passengers
+    - explain output shows only total_amount, passenger_count, tip_amount, and month are read from the parquet file.
+3. Highlights Duckplyr filter pushdown. 
+    - Gets popular (pickup, drop-off) combinations in Manhattan. 
+    - DuckDB can push the filter (Borough = “Manhattan”) all the way into the parquet scan of the dimension table
+4. Highlights Duckplyr lazy evaluation, 
+    - Gets percentage of trips that report no tip. Grouped by (pickup borough, drop-off borogh), ranked by number of trips.
+    - Need to join 2 intermediate results,
+    - Duckplyr lazily evaluates. 
+5. Highlights Duckplyr that Duckplyr can read hive partitioned data over the network easy. (Dplyr cannot do this)
+    - Hive partition filters
+    - Month filter not in explain output (yet)
 
 

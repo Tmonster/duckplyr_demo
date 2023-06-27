@@ -23,9 +23,7 @@ popular_manhattan_cab_rides <- taxi_data_2019 |>
     num_trips = n(),
     .by = c(start_neighborhood, end_neighborhood),
   ) |>
-  arrange(desc(num_trips)) |> head(20) |>
-  print()
-  
+  arrange(desc(num_trips))
 
 time <- system.time(collect(popular_manhattan_cab_rides))
 
