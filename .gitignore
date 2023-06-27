@@ -2,3 +2,4 @@ junk/*
 dplyr/other/*
 duckplyr/other/*
 taxi-data-2019.parquet
+**/.DS_Store
