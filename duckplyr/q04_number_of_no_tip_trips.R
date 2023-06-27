@@ -24,7 +24,6 @@ num_trips_per_borough <- taxi_data_2019 |>
   mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y) |>
   select(pickup_borough, dropoff_borough, tip_amount) |>
   summarise(
-    num_trips_with_0_tip = n(),
     num_trips = n(),
     .by = c(pickup_borough, dropoff_borough)
   )
