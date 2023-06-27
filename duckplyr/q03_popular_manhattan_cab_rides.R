@@ -8,25 +8,28 @@ duckplyr_from_parquet <- function(path, options=list()) {
    duckplyr:::as_duckplyr_df(duckdb:::rel_to_altrep(out))
 }
 
-
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
   taxi_data_2019 <- duckplyr_from_parquet('../duckplyr_demo/taxi-data-2019.parquet')
   zone_map <- duckplyr_from_parquet("../duckplyr_demo/zone_lookups.parquet")
 }
 
-
-# maybe vector memory limit is exhausted depending on your memory?
-# there are 168 groups
-tips_by_day_hour <- taxi_data_2019 |> 
+popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |> 
-  mutate(tip_pct = 100 * tip_amount / total_amount, dn = dayofweek(pickup_datetime), hr=hour(pickup_datetime)) |>
+  inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
+  inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
+  filter(Borough.x == "Manhattan", Borough.y=="Manhattan") |>
+  select(start_neighborhood = Zone.x, end_neighborhood = Zone.y) |>
   summarise(
-    avg_tip_pct = mean(tip_pct),
-    n = n(),
-    .by = c(dn, hr)
+    num_trips = n(),
+    .by = c(start_neighborhood, end_neighborhood),
   ) |>
-  arrange(desc(avg_tip_pct))
+  arrange(desc(num_trips)) |> head(20) |>
+  print()
+  
 
-time <- system.time(collect(tips_by_day_hour))
+time <- system.time(collect(popular_manhattan_cab_rides))
 
-# duckdb:::rel_explain(duckdb:::rel_from_altrep_df(tips_by_day_hour))
+# duckdb:::rel_explain(duckdb:::rel_from_altrep_df(popular_manhattan_cab_rides))
+
+print("time to get result")
+print(time)
