@@ -1,5 +1,6 @@
 options(conflicts.policy = list(warn = FALSE))
 library(tidyverse)
+# for data loading
 library(duckdb)
 
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
@@ -9,7 +10,7 @@ if (!exists("taxi_data_2019") && !exists("zone_map")) {
 
 tips_by_day_hour <- taxi_data_2019 |> 
   # filter(month==12) |>
-  filter(total_amount > 0) |> 
+  filter(total_amount > 0) |>
   mutate(tip_pct = 100 * tip_amount / total_amount, dn = wday(pickup_datetime), hr=hour(pickup_datetime)) |>
   summarise(
     avg_tip_pct = mean(tip_pct),
@@ -18,3 +19,5 @@ tips_by_day_hour <- taxi_data_2019 |>
   ) |> arrange(desc(avg_tip_pct))
 
 time <- system.time(collect(tips_by_day_hour))
+
+tips_by_day_hour |> head(5)
