@@ -2,6 +2,8 @@ options(conflicts.policy = list(warn = FALSE))
 library(duckplyr)
 library(tidyverse)
 
+options(duckdb.materialize_message = FALSE)
+
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
   taxi_data_2019 <- duckplyr_df_from_file('taxi-data-2019-partitioned/*/*.parquet', 'read_parquet', list(hive_partitioning=TRUE))
   zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
@@ -18,5 +20,10 @@ tips_by_passenger <- taxi_data_2019 |>
   arrange(desc(passenger_count))
 
 time <- system.time(collect(tips_by_passenger))
+
+print("Q2 collection time")
+print(time)
+
+tips_by_passenger |> head(5) |> print()
 
 # duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(tips_by_passenger))
