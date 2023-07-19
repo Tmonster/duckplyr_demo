@@ -36,7 +36,7 @@ num_zero_percent_trips <- num_trips_per_borough |>
   inner_join(num_trips_per_borough_no_tip, by=join_by(pickup_borough, dropoff_borough)) |>
   mutate(num_trips = num_trips, percent_zero_tips_trips = 100*num_zero_tip_trips/num_trips) |> 
   select(pickup_borough, dropoff_borough, num_trips, percent_zero_tips_trips) |>
-  arrange(desc(num_trips))
+  arrange(desc(percent_zero_tips_trips))
 
 
 time <- system.time(collect(num_zero_percent_trips))
