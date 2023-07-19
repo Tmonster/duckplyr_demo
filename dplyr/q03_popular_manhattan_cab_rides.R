@@ -2,10 +2,7 @@ options(conflicts.policy = list(warn = FALSE))
 library(tidyverse)
 library(duckdb)
 
-if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckdb:::sql("FROM 'taxi-data-2019.parquet' where month > 9")
-  zone_map <- duckdb:::sql("FROM 'zone_lookups.parquet'")
-}
+source('dplyr/load_taxi_data.R')
 
 time <- system.time(popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |> 
