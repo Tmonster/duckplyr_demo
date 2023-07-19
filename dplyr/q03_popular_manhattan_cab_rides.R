@@ -3,11 +3,11 @@ library(tidyverse)
 library(duckdb)
 
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckdb:::sql("FROM 'taxi-data-2019.parquet'")
-  zone_map <- duckdb::sql("FROM 'zone_lookups.parquet'")
+  taxi_data_2019 <- duckdb:::sql("FROM 'taxi-data-2019.parquet' where month > 9")
+  zone_map <- duckdb:::sql("FROM 'zone_lookups.parquet'")
 }
 
-popular_manhattan_cab_rides <- taxi_data_2019 |>
+time <- system.time(popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |> 
   # filter(month == 12) |>
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
@@ -18,10 +18,14 @@ popular_manhattan_cab_rides <- taxi_data_2019 |>
     num_trips = n(),
     .by = c(start_neighborhood, end_neighborhood),
   ) |>
-  arrange(desc(num_trips)) |> head(20) |>
-  print()
+  arrange(desc(num_trips)))
 
-time <- system.time(collect(popular_manhattan_cab_rides))
+# time <- system.time(collect(popular_manhattan_cab_rides))
 
-print("time to get result")
-print(time)
+q3_dplyr <- time
+print("Dplyr Q3 collection time")
+print(q3_dplyr)
+print("Most popular cab rides within manhattan")
+popular_manhattan_cab_rides |> head(5) |> print()
+
+rm(popular_manhattan_cab_rides)

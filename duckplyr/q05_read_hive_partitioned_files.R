@@ -4,16 +4,7 @@ library(tidyverse)
 
 options(duckdb.materialize_message = FALSE)
 
-if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckplyr_df_from_file('taxi-data-2019-partitioned/*/*.parquet', 'read_parquet', list(hive_partitioning=TRUE))
-  zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
-}
-
-# if (!exists("taxi_data_2019") && !exists("zone_map")) {
-#   taxi_data_2019 <- duckplyr_df_from_file('s3://voltrondata-labs-datasets/nyc-taxi-tiny', 'read_parquet', list(hive_partitioning=TRUE))
-#   zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
-# }
-
+source('duckplyr/load_taxi_data.R')
 
 tips_by_day_hour <- taxi_data_2019 |> 
   filter(total_amount > 0) |> 
@@ -31,8 +22,6 @@ time <- system.time(collect(tips_by_day_hour))
 
 # duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(tips_by_day_hour))
 
-print("Q5 collection time")
-print(time)
-
-tips_by_day_hour |> head(5) |> print()
-
+q5_duckplyr <- time
+print("Q5 Duckplyr collection time")
+print(q5_duckplyr)

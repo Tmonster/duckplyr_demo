@@ -4,10 +4,7 @@ library(duckplyr)
 
 options(duckdb.materialize_message = FALSE)
 
-if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckplyr_df_from_file('taxi-data-2019-partitioned/*/*.parquet', 'read_parquet', list(hive_partitioning=TRUE))
-  zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
-}
+source('duckplyr/load_taxi_data.R')
 
 # maybe vector memory limit is exhausted depending on your memory?
 # there are 168 groups
@@ -23,9 +20,10 @@ tips_by_day_hour <- taxi_data_2019 |>
 
 time <- system.time(collect(tips_by_day_hour))
 
-print("Q1 collection time")
-print(time)
-
+q1_duckplyr <- time
+print("Q1 Duckplyr collection time")
+print(q1_duckplyr)
+print("Tip Average by day of week and hour")
 tips_by_day_hour |> head(5) |> print()
 
 # duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(tips_by_day_hour))

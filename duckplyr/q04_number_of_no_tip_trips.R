@@ -4,10 +4,7 @@ library(tidyverse)
 
 options(duckdb.materialize_message = FALSE)
 
-if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckplyr_df_from_file('taxi-data-2019-partitioned/*/*.parquet', 'read_parquet', list(hive_partitioning=TRUE))
-  zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
-}
+source('duckplyr/load_taxi_data.R')
 
 # -------- Q4 ---------
 # What percent of taxi rides per borough arent reporting tips / don't tip
@@ -15,6 +12,7 @@ if (!exists("taxi_data_2019") && !exists("zone_map")) {
 
 # What pickup neighborhoods tip the most?
 num_trips_per_borough <- taxi_data_2019 |>
+  filter(total_amount > 0) |>
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
   mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y) |>
@@ -25,7 +23,7 @@ num_trips_per_borough <- taxi_data_2019 |>
   )
 
 num_trips_per_borough_no_tip <- taxi_data_2019 |>
-  filter(tip_amount == 0) |>
+  filter(total_amount > 0, tip_amount == 0) |>
   inner_join(zone_map, by=join_by(pickup_location_id == LocationID)) |>
   inner_join(zone_map, by=join_by(dropoff_location_id == LocationID)) |>
   mutate(pickup_borough =Borough.x, dropoff_borough=Borough.y, tip_amount) |>
@@ -43,9 +41,11 @@ num_zero_percent_trips <- num_trips_per_borough |>
 
 time <- system.time(collect(num_zero_percent_trips))
 
-print("Q4 collection time")
-print(time)
-num_zero_percent_trips |> head(5) |> print()
+q4_duckplyr <- time
+print("Q4 Duckplyr collection time")
+print(q4_duckplyr)
+print("Percentage of trips that report no tip")
+num_zero_percent_trips |> head(20) |> print()
 
 
 
