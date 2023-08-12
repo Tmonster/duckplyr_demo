@@ -29,6 +29,8 @@ bargraph <- ggplot(timings, aes(x = query, y = time, fill = system)) +
   geom_col(position = "dodge") +
   theme(text = element_text(size = 20))
 
+bargraph
+
 # save the data
 write.csv(timings, "timings.csv", row.names = FALSE)
 
