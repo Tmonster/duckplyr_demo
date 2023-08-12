@@ -7,7 +7,7 @@ First setup and install the libraries and unzip the parquet data
 ```
 ### Install package and dependencies
 # install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
-pak::pak(c("duckdblabs/duckplyr", "curl", "zip"))
+pak::pak(c("duckdblabs/duckplyr", "curl", "zip", "tidyverse"))
 
 ### Download and unzip data (1.7 GB)
 curl::curl_download("http://duckplyr-demo-taxi-data.s3-website-eu-west-1.amazonaws.com/taxi-data-2019-partitioned.zip", "taxi-data-2019-partitioned.zip", quiet = FALSE)
