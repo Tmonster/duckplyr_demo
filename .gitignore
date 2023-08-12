@@ -7,3 +7,4 @@ arrow/**
 duckdb/**
 arrow_ignore/*
 duckdb_ignore/*
+.Rproj.user
