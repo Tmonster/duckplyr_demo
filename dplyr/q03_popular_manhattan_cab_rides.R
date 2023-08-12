@@ -1,6 +1,5 @@
 options(conflicts.policy = list(warn = FALSE))
 library(tidyverse)
-library(duckdb)
 
 source("dplyr/load_taxi_data.R")
 
@@ -8,7 +7,6 @@ start <- Sys.time()
 
 popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |>
-  # filter(month == 12) |>
   inner_join(zone_map, by = join_by(pickup_location_id == LocationID)) |>
   inner_join(zone_map, by = join_by(dropoff_location_id == LocationID)) |>
   filter(Borough.x == "Manhattan", Borough.y == "Manhattan") |>
@@ -28,5 +26,3 @@ print("Most popular cab rides within manhattan")
 popular_manhattan_cab_rides |>
   head(5) |>
   print()
-
-rm(popular_manhattan_cab_rides)

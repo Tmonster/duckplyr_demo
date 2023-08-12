@@ -9,7 +9,7 @@ source("duckplyr/load_taxi_data.R")
 start <- Sys.time()
 
 # -------- Q4 ---------
-# What percent of taxi rides per borough arent reporting tips / don't tip
+# What percent of taxi rides per borough aren't reporting tips / don't tip
 # grouped by (pickup, dropoff) Borough
 
 # What pickup neighborhoods tip the most?

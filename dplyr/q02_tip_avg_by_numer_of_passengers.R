@@ -1,6 +1,5 @@
 options(conflicts.policy = list(warn = FALSE))
 library(tidyverse)
-library(duckdb)
 
 source("dplyr/load_taxi_data.R")
 
@@ -25,5 +24,3 @@ print("tips by passenger count")
 tips_by_passenger |>
   head(5) |>
   print()
-
-rm(tips_by_passenger)
