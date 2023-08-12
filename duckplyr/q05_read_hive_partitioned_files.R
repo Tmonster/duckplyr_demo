@@ -8,7 +8,7 @@ source("duckplyr/load_taxi_data.R")
 
 start <- Sys.time()
 
-tips_by_day_hour <- taxi_data_2019 |>
+tips_by_day_hour <- taxi_data_2019_lazy |>
   filter(total_amount > 0) |>
   filter(month == 12) |>
   mutate(tip_pct = 100 * tip_amount / total_amount, dn = wday(pickup_datetime), hr = hour(pickup_datetime)) |>
