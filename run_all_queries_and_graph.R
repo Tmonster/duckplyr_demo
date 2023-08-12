@@ -10,8 +10,8 @@ rm(zone_map)
 
 source("duckplyr/run_all_queries.R")
 
-all_timings = c(q1_duckplyr["elapsed"], q2_duckplyr["elapsed"], q3_duckplyr["elapsed"], q4_duckplyr["elapsed"],
-             q1_dplyr["elapsed"], q2_dplyr["elapsed"], q3_dplyr["elapsed"], q4_dplyr["elapsed"])
+all_timings = c(q1_duckplyr, q2_duckplyr, q3_duckplyr, q4_duckplyr,
+             q1_dplyr, q2_dplyr, q3_dplyr, q4_dplyr)
 
 timings = data.frame(query=c("query 1", "query 2", "query 3", "query 4"),
 				time=all_timings,

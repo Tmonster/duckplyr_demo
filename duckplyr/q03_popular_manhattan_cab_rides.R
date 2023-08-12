@@ -6,6 +6,8 @@ options(duckdb.materialize_message = FALSE)
 
 source("duckplyr/load_taxi_data.R")
 
+start <- Sys.time()
+
 popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |>
   inner_join(zone_map, by = join_by(pickup_location_id == LocationID)) |>
@@ -18,9 +20,12 @@ popular_manhattan_cab_rides <- taxi_data_2019 |>
   ) |>
   arrange(desc(num_trips))
 
-time <- system.time(collect(popular_manhattan_cab_rides))
+# Trigger collection
+# (could also happen before if you run this script in RStudio step by step)
+nrow(popular_manhattan_cab_rides)
 
-# duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(popular_manhattan_cab_rides))
+time <- hms::as_hms(Sys.time() - start)
+
 q3_duckplyr <- time
 print("Q3 Duckplyr collection time")
 print(q3_duckplyr)
@@ -28,3 +33,5 @@ print("Most popular cab rides within manhattan")
 popular_manhattan_cab_rides |>
   head(5) |>
   print()
+
+# duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(popular_manhattan_cab_rides))

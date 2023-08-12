@@ -4,7 +4,9 @@ library(duckdb)
 
 source("dplyr/load_taxi_data.R")
 
-time <- system.time(tips_by_passenger <- taxi_data_2019 |>
+start <- Sys.time()
+
+tips_by_passenger <- taxi_data_2019 |>
   filter(total_amount > 0) |>
   mutate(tip_pct = 100 * tip_amount / total_amount) |>
   summarise(
@@ -12,7 +14,9 @@ time <- system.time(tips_by_passenger <- taxi_data_2019 |>
     n = n(),
     .by = passenger_count
   ) |>
-  arrange(desc(passenger_count)))
+  arrange(desc(passenger_count))
+
+time <- hms::as_hms(Sys.time() - start)
 
 q2_dplyr <- time
 print("Dplyr Q2 collection time")

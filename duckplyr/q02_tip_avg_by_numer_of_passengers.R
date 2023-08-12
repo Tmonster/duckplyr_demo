@@ -6,6 +6,8 @@ options(duckdb.materialize_message = FALSE)
 
 source("duckplyr/load_taxi_data.R")
 
+start <- Sys.time()
+
 tips_by_passenger <- taxi_data_2019 |>
   filter(total_amount > 0) |>
   mutate(tip_pct = 100 * tip_amount / total_amount) |>
@@ -16,7 +18,11 @@ tips_by_passenger <- taxi_data_2019 |>
   ) |>
   arrange(desc(passenger_count))
 
-time <- system.time(collect(tips_by_passenger))
+# Trigger collection
+# (could also happen before if you run this script in RStudio step by step)
+nrow(tips_by_passenger)
+
+time <- hms::as_hms(Sys.time() - start)
 
 q2_duckplyr <- time
 print("Q2 Duckplyr collection time")

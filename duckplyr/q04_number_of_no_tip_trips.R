@@ -6,6 +6,8 @@ options(duckdb.materialize_message = FALSE)
 
 source("duckplyr/load_taxi_data.R")
 
+start <- Sys.time()
+
 # -------- Q4 ---------
 # What percent of taxi rides per borough arent reporting tips / don't tip
 # grouped by (pickup, dropoff) Borough
@@ -38,8 +40,11 @@ num_zero_percent_trips <- num_trips_per_borough |>
   select(pickup_borough, dropoff_borough, num_trips, percent_zero_tips_trips) |>
   arrange(desc(percent_zero_tips_trips))
 
+# Trigger collection
+# (could also happen before if you run this script in RStudio step by step)
+nrow(num_zero_percent_trips)
 
-time <- system.time(collect(num_zero_percent_trips))
+time <- hms::as_hms(Sys.time() - start)
 
 q4_duckplyr <- time
 print("Q4 Duckplyr collection time")
@@ -48,7 +53,5 @@ print("Percentage of trips that report no tip")
 num_zero_percent_trips |>
   head(20) |>
   print()
-
-
 
 # duckplyr::rel_explain(duckplyr::duckdb_rel_from_df(num_zero_percent_trips))

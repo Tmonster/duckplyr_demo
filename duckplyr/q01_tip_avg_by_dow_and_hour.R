@@ -6,6 +6,8 @@ options(duckdb.materialize_message = FALSE)
 
 source("duckplyr/load_taxi_data.R")
 
+start <- Sys.time()
+
 # maybe vector memory limit is exhausted depending on your memory?
 # there are 168 groups
 tips_by_day_hour <- taxi_data_2019 |>
@@ -18,7 +20,11 @@ tips_by_day_hour <- taxi_data_2019 |>
   ) |>
   arrange(desc(avg_tip_pct))
 
-time <- system.time(collect(tips_by_day_hour))
+# Trigger collection
+# (could also happen before if you run this script in RStudio step by step)
+nrow(tips_by_day_hour)
+
+time <- hms::as_hms(Sys.time() - start)
 
 q1_duckplyr <- time
 print("Q1 Duckplyr collection time")

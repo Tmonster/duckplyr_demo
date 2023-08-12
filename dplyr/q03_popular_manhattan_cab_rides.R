@@ -4,7 +4,9 @@ library(duckdb)
 
 source("dplyr/load_taxi_data.R")
 
-time <- system.time(popular_manhattan_cab_rides <- taxi_data_2019 |>
+start <- Sys.time()
+
+popular_manhattan_cab_rides <- taxi_data_2019 |>
   filter(total_amount > 0) |>
   # filter(month == 12) |>
   inner_join(zone_map, by = join_by(pickup_location_id == LocationID)) |>
@@ -15,9 +17,9 @@ time <- system.time(popular_manhattan_cab_rides <- taxi_data_2019 |>
     num_trips = n(),
     .by = c(start_neighborhood, end_neighborhood),
   ) |>
-  arrange(desc(num_trips)))
+  arrange(desc(num_trips))
 
-# time <- system.time(collect(popular_manhattan_cab_rides))
+time <- hms::as_hms(Sys.time() - start)
 
 q3_dplyr <- time
 print("Dplyr Q3 collection time")
