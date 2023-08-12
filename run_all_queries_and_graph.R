@@ -2,11 +2,15 @@
 options(conflicts.policy = list(warn = FALSE))
 library(tidyverse)
 
-source("dplyr/run_all_queries.R")
+if (file.exists("dplyr.rda")) {
+  load("dplyr.rda")
+} else {
+  source("dplyr/run_all_queries.R")
 
-# remove the data so duckplyr can reload it lazily.
-rm(taxi_data_2019)
-rm(zone_map)
+  # remove the data so duckplyr can reload it lazily.
+  rm(taxi_data_2019)
+  rm(zone_map)
+}
 
 source("duckplyr/run_all_queries.R")
 
@@ -31,3 +35,5 @@ write.csv(timings, "timings.csv", row.names = FALSE)
 # plot
 dpi <- 96
 ggsave(filename = "timings.jpg", plot = bargraph, width = 900 / dpi, height = 500 / dpi, dpi = dpi)
+
+save(list = c("q1_dplyr", "q2_dplyr", "q3_dplyr", "q4_dplyr"), file = "dplyr.rda")
