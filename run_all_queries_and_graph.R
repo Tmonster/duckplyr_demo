@@ -20,7 +20,7 @@ all_timings <- c(
 )
 
 timings <- data.frame(
-  query = c("query 1", "query 2", "query 3", "query 4"),
+  query = rep(c("query 1", "query 2", "query 3", "query 4"), 2),
   time = all_timings,
   system = c("duckplyr", "duckplyr", "duckplyr", "duckplyr", "dplyr", "dplyr", "dplyr", "dplyr")
 )
