@@ -21,12 +21,18 @@ all_timings <- c(
 
 timings <- data.frame(
   query = rep(forcats::fct_inorder(c("Party people", "Generous crowd", "Hot trail", "Cheapskates")), 2),
-  time = all_timings,
+  time = as.numeric(all_timings),
   system = c("duckplyr", "duckplyr", "duckplyr", "duckplyr", "dplyr", "dplyr", "dplyr", "dplyr")
 )
 
 bargraph <- ggplot(timings, aes(x = query, y = time, fill = system)) +
   geom_col(position = "dodge") +
+  labs(
+    x = "Query",
+    y = "Time (seconds)",
+    fill = "System",
+    title = "Querying NYC taxi data from 2019"
+  ) +
   theme(text = element_text(size = 20))
 
 bargraph
