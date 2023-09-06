@@ -7,3 +7,8 @@ arrow/**
 duckdb/**
 arrow_ignore/*
 duckdb_ignore/*
+*.zip
+taxi-data-2019-partitioned/
+.Rproj.user
+*.pdf
+*.rda

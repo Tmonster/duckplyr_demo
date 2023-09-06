@@ -1,5 +1,9 @@
 if (!exists("taxi_data_2019") && !exists("zone_map")) {
-  taxi_data_2019 <- duckplyr_df_from_file('taxi-data-2019-partitioned/*/*.parquet', 'read_parquet', list(hive_partitioning=TRUE)) |> 
-    filter(month > 9)
-  zone_map <- duckplyr_df_from_file("zone_lookups.parquet", 'read_parquet')
+  taxi_data_2019 <- as_duckplyr_df(duckdb:::sql("FROM 'taxi-data-2019-partitioned/*/*.parquet'"))
+  zone_map <- as_duckplyr_df(duckdb:::sql("FROM 'zone_lookups.parquet'"))
+  taxi_data_2019_lazy <- duckplyr_df_from_file("taxi-data-2019-partitioned/*/*.parquet", "read_parquet", list(hive_partitioning = TRUE))
 }
+
+Sys.setenv(DUCKPLYR_FORCE = TRUE)
+Sys.setenv(DUCKPLYR_META_SKIP = TRUE)
+# Sys.setenv(DUCKPLYR_OUTPUT_ORDER = TRUE) # Too complex, need to move OO preservation to R layer of duckdb
