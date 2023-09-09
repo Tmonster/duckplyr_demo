@@ -15,12 +15,12 @@ if (file.exists("dplyr.rda")) {
 source("duckplyr/run_all_queries.R")
 
 all_timings <- c(
-  q1_duckplyr, q2_duckplyr, q3_duckplyr, q4_duckplyr,
-  q1_dplyr, q2_dplyr, q3_dplyr, q4_dplyr
+  q2_duckplyr, q1_duckplyr, q3_duckplyr, q4_duckplyr,
+  q2_dplyr, q1_dplyr, q3_dplyr, q4_dplyr
 )
 
 timings <- data.frame(
-  query = rep(forcats::fct_inorder(c("Party people", "Generous crowd", "Hot trail", "Cheapskates")), 2),
+  query = rep(forcats::fct_inorder(c("Generous crowd", "Party people", "Hot trail", "Cheapskates")), 2),
   time = as.numeric(all_timings),
   system = c("duckplyr", "duckplyr", "duckplyr", "duckplyr", "dplyr", "dplyr", "dplyr", "dplyr")
 )
@@ -37,11 +37,29 @@ bargraph <- ggplot(timings, aes(x = query, y = time, fill = system)) +
 
 bargraph
 
+speedups <-
+  timings |>
+  pivot_wider(names_from = system, values_from = time) |>
+  mutate(speedup = dplyr / duckplyr)
+
+scattergraph <- ggplot(speedups, aes(x = query, y = speedup)) +
+  geom_point() +
+  labs(
+    x = "Query",
+    y = "Speedup",
+    title = "Querying NYC taxi data from 2019"
+  ) +
+  scale_y_log10() +
+  theme(text = element_text(size = 20))
+
+scattergraph
+
 # save the data
 write.csv(timings, "timings.csv", row.names = FALSE)
 
 # plot
 dpi <- 96
 ggsave(filename = "timings.pdf", plot = bargraph, width = 900 / dpi, height = 500 / dpi, dpi = dpi)
+ggsave(filename = "scattergraph.pdf", plot = scattergraph, width = 900 / dpi, height = 500 / dpi, dpi = dpi)
 
 save(list = c("q1_dplyr", "q2_dplyr", "q3_dplyr", "q4_dplyr"), file = "dplyr.rda")
