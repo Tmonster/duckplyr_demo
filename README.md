@@ -1,7 +1,6 @@
-# Organization
-1. Getting Started
+# duckplyr_demo
 
-### Getting Started
+## Getting Started
 
 First setup and install the libraries and unzip the parquet data
 
@@ -15,7 +14,7 @@ curl::curl_download("http://duckplyr-demo-taxi-data.s3-website-eu-west-1.amazona
 zip::unzip("taxi-data-2019-partitioned.zip")
 ```
 
-### Running the queries/scripts
+## Running the queries/scripts
 
 To run all duckplyr queries at once run 
 
@@ -41,7 +40,7 @@ To run just one dplyr query run
 Rscript dplyr/q0*_**.R
 ```
 
-### What do the queries show/highlight?
+## What do the queries show/highlight?
 
 1. Highlights duckplyr handling of many small groups
 
