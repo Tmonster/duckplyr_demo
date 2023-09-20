@@ -24,9 +24,7 @@ tips_by_passenger <-
 
 class(tips_by_passenger)
 
-duckdb:::rel_explain(
-  duckdb:::rel_from_altrep_df(tips_by_passenger)
-)
+explain(tips_by_passenger)
 
 system.time(print(tips_by_passenger$passenger_count))
 system.time(print(tips_by_passenger$passenger_count))
