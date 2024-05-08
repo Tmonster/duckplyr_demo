@@ -66,7 +66,7 @@ Rscript dplyr/q0*_**.R
     - Need to join 2 intermediate results,
     - duckplyr lazily evaluates. 
     
-5. Highlights duckplyr that duckplyr can read hive partitioned data over the network easy. (dplyr cannot do this)
+5. Highlights that duckplyr can read hive partitioned data over the network easy. (dplyr cannot do this)
 
     - Hive partition filters
     - Month filter not in explain output (yet)
