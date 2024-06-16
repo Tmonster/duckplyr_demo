@@ -11,7 +11,7 @@ if (!exists("zone_map")) {
 }
 
 if (!exists("taxi_data_2019_lazy")) {
-  taxi_data_2019_lazy <- duckplyr_df_from_file("taxi-data-2019-partitioned/*/*.parquet", "read_parquet", list(hive_partitioning = TRUE))
+  taxi_data_2019_lazy <- duckplyr_df_from_file("taxi-data-2019-partitioned/*/*.parquet", "read_parquet", options = list(hive_partitioning = TRUE))
 }
 
 Sys.setenv(DUCKPLYR_FORCE = TRUE)
